@@ -70,11 +70,13 @@ class HTTPRequester(object):
             base_params={},
             response_format=ResponseFormat.RAW,
             throttler=None,
+            headers=None,
             ):
         self.base_url = base_url
         self.base_params = base_params
         self.response_format = response_format
-        self.throttler=throttler
+        self.throttler = throttler
+        self.headers = headers
 
     def get(self, params=None):
         if params or self.base_params:
@@ -112,10 +114,12 @@ class FetcherConfig:
             base_url,
             base_params={},
             response_format=ResponseFormat.RAW,
+            headers={},
             ):
         self.base_url = base_url
         self.base_params = base_params
         self.response_format = response_format
+        self.headers = headers
 
 
 class FetchTask:
@@ -159,22 +163,26 @@ class Fetcher(threading.Thread):
         self.terminate = False
 
     def fetch(self, task):
-        if task.params or task.config.base_params:
+        if task.params or task.config.base_params or task.params_no_encode:
             url = task.config.base_url + "?"
         else:
             url = task.config.base_url
-        url += urllib.urlencode(task.config.base_params)
+        param_added = False
         if task.config.base_params:
-            url += "&" + urllib.urlencode(task.params)
-        else:
+            url += urllib.urlencode(task.config.base_params)
+            param_added = True
+        if task.params:
+            if param_added:
+                url += "&"
             url += urllib.urlencode(task.params)
-        if task.params or task.config.base_params:
-            url += "&" + task.params_no_encode
-        else:
+        if task.params_no_encode:
+            if param_added:
+                url += "&"
             url += task.params_no_encode
         try:
             logger.debug("Request: \n %s" % (str(url)[:1024]))
-            response = urllib2.urlopen(url).read()
+            request = urllib2.Request(url=url, headers=task.config.headers)
+            response = urllib2.urlopen(request).read()
             logger.debug("Response: \n %s" % (str(response)[:1024]))
             return task.respond(response)
         except urllib2.URLError as e:
