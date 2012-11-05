@@ -99,7 +99,7 @@ class HTTPRequester(object):
             elif self.response_format == ResponseFormat.JSON:
                 return json.loads(response)
             elif self.response_format == ResponseFormat.SOUP:
-                return BeautifulSoup(response)
+                return BeautifulSoup.BeautifulSoup(response)
         except urllib2.URLError as e:
             logger.error("Failure %s" % (e.reason))
 
