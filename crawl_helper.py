@@ -15,6 +15,7 @@ import BeautifulSoup
 import time
 import threading
 import Queue
+import sys, traceback
 
 
 logger = logging.getLogger('crawl_helper')
@@ -144,10 +145,15 @@ class FetchTask:
             response = json.loads(response)
         elif self.config.response_format == ResponseFormat.SOUP:
             response = BeautifulSoup.BeautifulSoup(response)
-        if not self.context:
-            return self.process_response(response)
-        else:
-            return self.process_response(response, self.context)
+        try:
+            if not self.context:
+                return self.process_response(response)
+            else:
+                return self.process_response(response, self.context)
+        except:
+            print '-'*60
+            traceback.print_exc(file=sys.stdout)
+            print '-'*60
 
 
 
