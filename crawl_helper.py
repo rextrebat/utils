@@ -143,7 +143,7 @@ class FetchTask:
         elif self.config.response_format == ResponseFormat.JSON:
             response = json.loads(response)
         elif self.config.response_format == ResponseFormat.SOUP:
-            response = BeautifulSoup(response)
+            response = BeautifulSoup.BeautifulSoup(response)
         if not self.context:
             return self.process_response(response)
         else:
